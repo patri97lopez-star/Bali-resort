@@ -8,9 +8,10 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   isMandatory?: boolean;
+  onSuccess?: (user: any) => void;
 }
 
-export function AuthModal({ isOpen, onClose, isMandatory = false }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, isMandatory = false, onSuccess }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,16 +23,22 @@ export function AuthModal({ isOpen, onClose, isMandatory = false }: AuthModalPro
     e.preventDefault();
     setError('');
     setLoading(true);
+    
+    // Simular un retraso para que parezca real
+    await new Promise(resolve => setTimeout(resolve, 800));
+
     try {
-      if (mode === 'login') {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, { displayName: name });
-      }
+      // Mock de login/registro: Permitimos cualquier entrada
+      const mockUser = {
+        uid: 'elite-' + Math.random().toString(36).substr(2, 9),
+        email: email,
+        displayName: mode === 'register' ? name : email.split('@')[0],
+      };
+      
+      onSuccess?.(mockUser);
       onClose();
     } catch (err: any) {
-      setError(err.message);
+      setError("Error al procesar su solicitud VIP.");
     } finally {
       setLoading(false);
     }
@@ -40,11 +47,17 @@ export function AuthModal({ isOpen, onClose, isMandatory = false }: AuthModalPro
   const handleGoogleSignIn = async () => {
     setError('');
     setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
     try {
-      await signInWithPopup(auth, googleProvider);
+      const mockUser = {
+        uid: 'elite-google-' + Math.random().toString(36).substr(2, 9),
+        email: 'vip.guest@gmail.com',
+        displayName: 'VIP Guest',
+      };
+      onSuccess?.(mockUser);
       onClose();
     } catch (err: any) {
-      setError(err.message);
+      setError("Error en el acceso de cortesía.");
     } finally {
       setLoading(false);
     }
@@ -110,14 +123,14 @@ export function AuthModal({ isOpen, onClose, isMandatory = false }: AuthModalPro
                 </div>
               )}
               <div>
-                <label className="block text-[10px] uppercase tracking-widest text-white/30 mb-2 ml-1">Correo Electrónico</label>
+                <label className="block text-[10px] uppercase tracking-widest text-white/30 mb-2 ml-1">Usuario o Email</label>
                 <input
-                  type="email"
+                  type="text"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white text-sm focus:outline-none focus:border-gold/50 transition-colors"
-                  placeholder="ejemplo@correo.com"
+                  placeholder="Introduce cualquier usuario"
                 />
               </div>
               <div>

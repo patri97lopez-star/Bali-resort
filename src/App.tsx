@@ -408,6 +408,11 @@ export default function App() {
   const [eurInput, setEurInput] = useState<string>('');
   const [idrOutput, setIdrOutput] = useState<string>('0');
   const [user, setUser] = useState<User | null>(null);
+  const [mockUser, setMockUser] = useState<any>({
+    uid: 'guest-' + Math.random().toString(36).substr(2, 9),
+    email: 'huesped.vip@resort.com',
+    displayName: 'Huésped VIP'
+  });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [initializingAuth, setInitializingAuth] = useState(true);
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -415,17 +420,22 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setInitializingAuth(false);
-      if (!currentUser) {
-        setIsAuthModalOpen(true);
-      } else {
-        setIsAuthModalOpen(false);
+      if (currentUser) {
+        setUser(currentUser);
+        setMockUser(null);
         fetchReservations(currentUser.uid);
       }
+      setInitializingAuth(false);
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (mockUser) {
+      fetchReservations(mockUser.uid);
+      setIsAuthModalOpen(false);
+    }
+  }, [mockUser]);
 
   useEffect(() => {
     const idrVal = (parseFloat(eurInput) || 0) * 16300;
@@ -502,7 +512,8 @@ export default function App() {
   };
 
   const requestAction = async (type: 'restaurante' | 'experiencia' | 'villa' | 'actividad' | 'transporte', name: string, url?: string) => {
-    if (!user) {
+    const activeUser = user || mockUser;
+    if (!activeUser) {
       setIsAuthModalOpen(true);
       return;
     }
@@ -519,7 +530,7 @@ export default function App() {
     // Auto-save reservation interest to Firestore as a lead
     try {
       await addDoc(collection(db, 'reservations'), {
-        userId: user.uid,
+        userId: activeUser.uid,
         serviceType: type,
         serviceName: name,
         status: 'interés_web',
@@ -537,7 +548,11 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    if (mockUser) {
+      setMockUser(null);
+    } else {
+      await signOut(auth);
+    }
   };
 
   if (initializingAuth) {
@@ -624,11 +639,11 @@ export default function App() {
             <span className="text-[11px] font-mono text-white/60">{baliTime}</span>
           </div>
 
-          {user ? (
+          { (user || mockUser) ? (
             <div className="flex items-center gap-4 group">
               <div className="hidden sm:flex flex-col items-end">
                 <span className="text-[9px] text-gold/60 uppercase tracking-widest font-bold">Élite</span>
-                <span className="text-[11px] text-white/80">{user.displayName || user.email?.split('@')[0]}</span>
+                <span className="text-[11px] text-white/80">{(user || mockUser).displayName || (user || mockUser).email?.split('@')[0]}</span>
               </div>
               <button 
                 onClick={handleLogout}
@@ -859,7 +874,7 @@ export default function App() {
                 </div>
               </div>
               <p className="text-center text-[10px] text-white/20 mt-4 uppercase tracking-[0.1em]">
-                Bespoke Concierge Service • Bali • Leading Hotels of the World
+                Bespoke Concierge Service • Bali • Leading Hotels of the World • v2.4-Elite
               </p>
 
               {/* Horizontal Elite Toolkit Bar - Requested by user to be below "peticion" */}
@@ -1232,12 +1247,8 @@ export default function App() {
                             type="number" 
                             className="w-full bg-white/5 border border-white/10 rounded-2xl py-6 pl-16 pr-6 text-2xl font-serif text-white focus:outline-none focus:border-gold/40 transition-colors"
                             placeholder="0.00"
-                            onChange={(e) => {
-                              const val = parseFloat(e.target.value) || 0;
-                              const idrVal = val * 16300; // Mock rate
-                              const resultEl = document.getElementById('idr-result');
-                              if (resultEl) resultEl.innerText = idrVal.toLocaleString('id-ID') + ' IDR';
-                            }}
+                            value={eurInput}
+                            onChange={(e) => setEurInput(e.target.value)}
                           />
                         </div>
                       </div>
@@ -1253,7 +1264,7 @@ export default function App() {
                       <div>
                         <label className="text-[10px] uppercase tracking-[0.3em] text-white/40 mb-4 block font-bold italic">Valor en Rupia Indonesa (IDR)</label>
                         <div className="bg-white/5 rounded-2xl p-8 border border-gold/10 text-center">
-                           <span id="idr-result" className="text-4xl lg:text-5xl font-serif text-gold italic">0 IDR</span>
+                           <span className="text-4xl lg:text-5xl font-serif text-gold italic">{idrOutput} IDR</span>
                         </div>
                       </div>
                    </div>
@@ -1671,7 +1682,8 @@ export default function App() {
           <AuthModal 
             isOpen={isAuthModalOpen} 
             onClose={() => setIsAuthModalOpen(false)} 
-            isMandatory={!user}
+            isMandatory={false}
+            onSuccess={(u) => setMockUser(u)}
           />
         )}
       </main>
