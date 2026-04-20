@@ -1,0 +1,49 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique identifier for the user" },
+        "email": { "type": "string", "format": "email", "description": "User's email address" },
+        "displayName": { "type": "string", "description": "User's display name" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Account creation timestamp" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "Reservation": {
+      "title": "Reservation",
+      "description": "A reservation for a service",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Reference to the user who made the reservation" },
+        "serviceType": { 
+          "type": "string", 
+          "enum": ["restaurante", "experiencia", "villa", "actividad", "transporte"],
+          "description": "Type of service reserved" 
+        },
+        "serviceName": { "type": "string", "description": "Name of the specific service" },
+        "status": { 
+          "type": "string", 
+          "enum": ["pendiente", "confirmada", "cancelada"],
+          "description": "Current status of the reservation" 
+        },
+        "details": { "type": "string", "description": "Additional details or notes" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Reservation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["userId", "serviceType", "serviceName", "status", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Private user profiles"
+    },
+    "/reservations/{reservationId}": {
+      "schema": "Reservation",
+      "description": "All service reservations"
+    }
+  }
+}
