@@ -773,8 +773,26 @@ export default function App() {
 
             {/* Input Area */}
             <div className="p-8 lg:p-12 pt-0 w-full flex flex-col items-center">
-              {/* Daily Bali Insights Grid - Replaced Suggestions as per user request */}
-              <div className="max-w-6xl w-full mb-10 grid grid-cols-2 lg:grid-cols-4 gap-4 px-4 lg:px-0">
+              <div className="relative w-full max-w-6xl mx-auto px-4 lg:px-0 mb-10">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  placeholder="Escriba su petición aquí..."
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-full py-5 pl-10 pr-20 text-base focus:outline-none focus:border-gold/50 transition-all placeholder:text-white/20 shadow-2xl"
+                />
+                <button
+                  onClick={() => handleSend()}
+                  disabled={isLoading || !input.trim()}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-gold flex items-center justify-center text-ink hover:bg-gold/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                  <Send size={20} />
+                </button>
+              </div>
+
+              {/* Daily Bali Insights Grid - Moved below input as per user request */}
+              <div className="max-w-6xl w-full mb-8 grid grid-cols-2 lg:grid-cols-4 gap-4 px-4 lg:px-0">
                 {/* 1. Calendario Sagrado */}
                 <div className="glass-panel p-5 rounded-3xl border-gold/10 hover:border-gold/30 transition-all cursor-pointer group group relative overflow-hidden">
                    <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-30 transition-opacity">
@@ -839,24 +857,6 @@ export default function App() {
                    <h5 className="text-sm font-serif text-white mb-1">Jet Lag Recovery</h5>
                    <p className="text-[10px] text-white/40 italic">Masaje balinés a las 18:00</p>
                 </div>
-              </div>
-
-              <div className="relative w-full max-w-6xl mx-auto px-4 lg:px-0">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  placeholder="Escriba su petición aquí..."
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-full py-5 pl-10 pr-20 text-base focus:outline-none focus:border-gold/50 transition-all placeholder:text-white/20 shadow-2xl"
-                />
-                <button
-                  onClick={() => handleSend()}
-                  disabled={isLoading || !input.trim()}
-                  className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-gold flex items-center justify-center text-ink hover:bg-gold/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                >
-                  <Send size={20} />
-                </button>
               </div>
               <p className="text-center text-[10px] text-white/20 mt-4 uppercase tracking-[0.1em]">
                 Bespoke Concierge Service • Bali • Leading Hotels of the World
